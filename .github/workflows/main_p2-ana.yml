@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - p2-Ana
+name: Build and deploy Python app to Azure Web App - p2-Ana
 
 on:
   push:
@@ -13,41 +13,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      # Configura o ambiente Python para o Flask
+      - name: Set up Python version
+        uses: actions/setup-python@v5
         with:
-          node-version: '22.x'
+          python-version: '3.11'
 
-      - name: npm install, build, and test
+      # Entra na pasta backend e compacta apenas o que é necessário para o deploy
+      - name: Zip artifact for deployment
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          cd backend
+          zip -r ../release.zip ./*
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: python-app
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: node-app
-      
+          name: python-app
+
+      # Descompacta o pacote do backend na raiz antes de enviar ao Azure
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      # Faz o login usando as suas credenciais originais guardadas no GitHub
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -55,6 +61,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D21AB7E9CB664D66A3AF6714D73FA64F }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_55C7042132B94F2CAAADFB7934EDA18A }}
 
+      # Realiza o Deploy definitivo do Python
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -62,4 +69,3 @@ jobs:
           app-name: 'p2-Ana'
           slot-name: 'Production'
           package: .
-          
