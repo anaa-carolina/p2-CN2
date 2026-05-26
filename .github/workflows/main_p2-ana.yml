@@ -1,7 +1,8 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - p2-Ana
+name: Build and deploy Python app to Azure Web App - p2-ana
 
 on:
   push:
@@ -18,13 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Configura o ambiente Python para o Flask
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # Entra na pasta backend e compacta apenas o que é necessário para o deploy
+      # Garante que vamos compactar os arquivos de dentro da pasta backend
       - name: Zip artifact for deployment
         run: |
           cd backend
@@ -49,23 +49,23 @@ jobs:
         with:
           name: python-app
 
-      # Descompacta o pacote do backend na raiz antes de enviar ao Azure
+      # Extrai o zip do backend na raiz da máquina de deploy
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      # Faz o login usando as suas credenciais originais guardadas no GitHub
+      # Faz o login usando os segredos mais recentes atualizados pelo Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_35839CBC61024A74BAC65B7C49971865 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D21AB7E9CB664D66A3AF6714D73FA64F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_55C7042132B94F2CAAADFB7934EDA18A }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D60A64FD4F924466A9CA18FE60B7FBE7 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FC7A3C8906BA4451B6F50118D4732C9D }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D1300F65CC644BA5A7FFE4742E5574B2 }}
 
-      # Realiza o Deploy definitivo do Python
+      # Realiza o Deploy definitivo do Python Flask
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'p2-Ana'
+          app-name: 'p2-ana'
           slot-name: 'Production'
           package: .
